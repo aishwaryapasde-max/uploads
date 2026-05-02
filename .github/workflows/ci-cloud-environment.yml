@@ -16,6 +16,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Restore Persisted Data
+        run: |
+          if [ -f data.tar.gz ]; then
+            tar -xzf data.tar.gz -C ~/
+          fi
+
       - name: Install System & Office Apps
         run: |
           sudo apt-get update
@@ -49,6 +55,15 @@ jobs:
 
       - name: Prevent Auto-Disable
         uses: gautamkrishnar/keepalive-workflow@v2
+
+      - name: Save Persisted Data
+        run: |
+          tar -czf data.tar.gz -C ~/ .
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add data.tar.gz
+          git commit -m "Persist user data" || echo "No changes to commit"
+          git push
 
       - name: Finalize & Connection Info
         run: |
