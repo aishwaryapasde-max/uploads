@@ -2,8 +2,8 @@ name: CI-Cloud-Environment
 
 on:
   schedule:
-    - cron: '0 */6 * * *' # Auto-restarts every 6 hours
-  workflow_dispatch: # Allows you to start it manually
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -12,6 +12,7 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -41,11 +42,11 @@ jobs:
           </channel>
           EOF
 
-      - name: Configure User & Session
-        run: |
+      # ✅ FIXED STEP (separate uses)
+      - name: Setup Tailscale
         uses: tailscale/github-action@v2
         with:
-          authkey: tskey-auth-kHMoxaJtV411CNTRL-9drb6bHeKgK8ybp8U9nDgKvhpStfWwXnT
+          authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
 
       - name: Prevent Auto-Disable
         uses: gautamkrishnar/keepalive-workflow@v2
@@ -56,7 +57,7 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add data.tar.gz
-          git commit -m "Persist user data" || echo "No changes to commit"
+          git commit -m "Persist user data" || echo "No changes"
           git push
 
       - name: Finalize & Connection Info
@@ -64,9 +65,8 @@ jobs:
           echo "--------------------------------------------"
           echo "STATUS: SYSTEM ONLINE"
           echo "Tailscale IP:"
-          tailscale ip -4
-          echo "User: runner"
-          echo "Pass: password123"
+          tailscale ip -4 || echo "Tailscale not ready"
+          echo "User: Aditya"
+          echo "Pass: Aditya*pro"
           echo "--------------------------------------------"
-          # Keeps the machine alive for the 6-hour GitHub limit
           sleep 21600
