@@ -22,14 +22,13 @@ jobs:
             tar -xzf data.tar.gz -C ~/
           fi
 
-      - name: Install System & Office Apps
+      - name: Install Apps from Repository
         run: |
-          sudo apt-get update
-          # Install Desktop (XFCE), Remote Engine (XRDP), and Real Apps
-          sudo apt-get install -y xfce4 xfce4-goodies xrdp libreoffice firefox vlc gimp gnome-calculator
-          
-          # --- FIX THE WAVY 🌊 EFFECT (Performance Tweak) ---
-          # This disables the compositor to stop lag and "wavy" window movement
+          chmod +x ./install-apps.sh
+          ./install-apps.sh
+
+      - name: Configure Desktop Performance
+        run: |
           mkdir -p ~/.config/xfce4/xfconf/xfce-perchannel-xml/
           cat <<EOF > ~/.config/xfce4/xfconf/xfce-perchannel-xml/xfwm4.xml
           <?xml version="1.0" encoding="UTF-8"?>
@@ -41,14 +40,9 @@ jobs:
             </property>
           </channel>
           EOF
-          
-          # Configure User & Session
-          sudo adduser xrdp ssl-cert
-          echo "exec startxfce4" > ~/.xsession
-          echo "runner:password123" | sudo chpasswd
-          sudo systemctl restart xrdp
 
-      - name: Secure Network Layer
+      - name: Configure User & Session
+        run: |
         uses: tailscale/github-action@v2
         with:
           authkey: tskey-auth-kHMoxaJtV411CNTRL-9drb6bHeKgK8ybp8U9nDgKvhpStfWwXnT
